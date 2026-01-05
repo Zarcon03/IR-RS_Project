@@ -149,3 +149,6 @@ Thumbs.db
 
 # Virtual environment for this project - Brando
 Irs_env/
+
+# Pyterrier indexes
+terrier_index/
