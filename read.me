@@ -1,0 +1,50 @@
+To change:
+currently we're using test_queries from test.json
+we should instead create train_queries from train.json
+i think? even if there's not that much training here, it's mostly only chill evaluation of stuff
+
+optional:
+- what abt if we also do a nice GUI using the last pipeline? should be pretty easy
+- should we set up all the pipelines in the various files as objects and then compare all of them
+in the end in one unique file or not?
+
+-------- 3 BASIC BASELINES: --------
+
+1) base_pipeline_1.py
+bm25 vs Tfidf using query expansion
+- bm25 + pseudo relevance feedback
+- tfidf + pseudo relevance feedback
+vs without rm3
+
+2) base_pipeline_2.py
+Does it make sence to have both thesaurus based and pseudo relevance?
+ha senso? i risultati migliorano?
+- bm25 + (keyword extractor, thesaurus based) + pseudo relevance feedback
+- tfidf + (keyword extractor, thesaurus based) + pseudo relevance feedback 
+vs without rm3
+
+3) base_pipeline_3.py
+Indexing strategies:
+keywords extraction + thesaurus based keyword expansion
+indexing of only keywords and expanded keywords
+(use best retriever pipeline)                         
+
+
+-------- 2 ADDITIONAL EXPERIMENTS --------
+TRY ADDING RERANKING WITH Bi-Encoder on top of the previous best base_pipeline
+- (best between bm25 and tfidf) 
+- reranking with biencoder
+
+DEVELOP LAST PIPELINE
+- final hot shi'
+
+
+
+
+!!! optional
+this might be interesting
+
+PyTerrier supports query expansion using multiple fields. 
+We can use an external collection like Wikipedia for query expansion by indexing it separately and using it to enrich the query.
+This allows for more informative term expansion based on content from different fields in an external corpus.
+
