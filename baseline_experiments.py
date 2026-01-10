@@ -34,7 +34,7 @@ class BaselineExperiments():
             data = json.load(file)
             self.queries = pd.DataFrame.from_dict(data)
             self.queries.rename(columns={"query_id": "qid", "question": "query"}, inplace=True)
-            # self.queries_small = self.queries.sample(1000, random_state=42)
+            self.queries_small = self.queries.sample(1000, random_state=42)
         
     def load_qrels(self):
         with open(self.qrels_path, 'r', encoding='utf-8') as file:

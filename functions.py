@@ -10,14 +10,17 @@ from nltk.wsd import lesk
 from nltk import word_tokenize
 
 def keywords_extraction_RAKE(text: str, max_keywords: int) -> list[str]:
-    #NOTE here there are much more keywords being extracted
     r = Rake()
     r.extract_keywords_from_text(text)
-    phrases = r.get_ranked_phrases()[:max_keywords]
+    phrases = r.get_ranked_phrases()
+    
     words = set()
     for phrase in phrases:
         for word in phrase.split():
+            if len(words) >= max_keywords:
+                return list(words)
             words.add(word.lower())
+    
     return list(words)
 
 def keywords_extraction_BERT(text: str, max_keywords: int) -> list[str]:
