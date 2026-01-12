@@ -155,3 +155,6 @@ terrier_index/
 
 # Indexes files
 indexes
+
+# Results files
+results/

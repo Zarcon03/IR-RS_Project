@@ -35,6 +35,12 @@ class BenchmarkExperiments():
             )
         )
         return expanded_queries
+    
+    def check_indexes(self, *indexes):
+        for i in indexes:
+            if not hasattr(self.indexes, i):
+                raise RuntimeError(f"Before running load the index: {i}")
+
 
     def run_experiment_1(self, test_on_sample=True):
         if not hasattr(self.indexes, "basic_index"):
