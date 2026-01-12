@@ -3,9 +3,55 @@
 # nltk.download('wordnet')
 # nltk.download('stopwords')
 
+
+from rake_nltk import Rake
+from keybert import KeyBERT
+from nltk.wsd import lesk
+from nltk import word_tokenize
+import torch
+from sentence_transformers import SentenceTransformer
+from typing import List, Optional
+
+# 1. DEFINE GLOBAL REFERENCE
+_KW_MODEL_BERT: Optional[KeyBERT] = None
+_KW_MODEL_Rake: Optional[Rake] = None
+
+def _initialize_model(model):
+    """
+    Internal helper to load the model only when requested.
+    """
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if model == "BERT":
+        print(f"Initializing KeyBERT on: {device}...")
+        return KeyBERT()
+    elif model == "Rake":
+        return Rake()
+
+
+def keywords_extraction_BERT(text: str, max_keywords: int) -> List[str]:
+    """
+    Extracts keywords using KeyBERT. 
+    initializes the model only on the first run (Lazy Loading).
+    """
+    global _KW_MODEL_BERT
+    
+    if _KW_MODEL_BERT is None:
+        _KW_MODEL_BERT = _initialize_model("BERT")
+
+    keywords = _KW_MODEL_BERT.extract_keywords(
+        text, 
+        keyphrase_ngram_range=(1, 1), 
+        stop_words='english', 
+        top_n=max_keywords)
+    
+    return [k[0] for k in keywords]
+
 def keywords_extraction_RAKE(text: str, max_keywords: int) -> list[str]:
-    from rake_nltk import Rake
-    r = Rake()
+    global _KW_MODEL_Rake
+    
+    if _KW_MODEL_Rake is None:
+        _KW_MODEL_Rake = _initialize_model("Rake")
+    r = _KW_MODEL_Rake
     r.extract_keywords_from_text(text)
     phrases = r.get_ranked_phrases()
     
@@ -17,15 +63,6 @@ def keywords_extraction_RAKE(text: str, max_keywords: int) -> list[str]:
             words.add(word.lower())
     
     return list(words)
-
-def keywords_extraction_BERT(text: str, max_keywords: int) -> list[str]:
-    from keybert import KeyBERT
-    kwBert = KeyBERT()
-    keywords = kwBert.extract_keywords(text, keyphrase_ngram_range=(1, 1), stop_words='english', top_n=max_keywords)
-    kw = []
-    for k in keywords:
-        kw.append(k[0])
-    return kw
 
 def keywords_extractor(text: str, max_keywords=3, method='rake') -> list[str]:
     if method not in ['rake', 'bert']:
@@ -40,9 +77,6 @@ def keywords_extractor(text: str, max_keywords=3, method='rake') -> list[str]:
         return keywords
 
 def thesaurus_based_expansion(text: str, keywords: list[str], max_synonyms_per_keyword=2) -> list[str]:
-    from nltk.wsd import lesk
-    from nltk import word_tokenize
-
     expanded_keywords = []
     for kw in keywords:
         synset = lesk(word_tokenize(text), kw)

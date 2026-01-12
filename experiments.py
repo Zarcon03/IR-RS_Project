@@ -311,8 +311,8 @@ class BenchmarkExperiments():
         print(experiment5_results)
     
     def run_experiment_6(self, test_on_sample=True):
-        if not(hasattr(self.indexes, "basic_index") and hasattr(self.indexes, "dense_index")):
-            raise RuntimeError("To run this experiment basic_index and dense_index must be loaded, try load_basic_index() and load_dense_index")
+        if not(hasattr(self.indexes, "basic_index")):
+            raise RuntimeError("To run this experiment basic_index must be loaded, try load_basic_index()")
         
         bm25 = pt.terrier.Retriever(self.indexes.basic_index, wmodel="BM25")
         monoT5 = MonoT5ReRanker(batch_size = 16)
@@ -326,13 +326,13 @@ class BenchmarkExperiments():
             queries_to_use = self.collection.queries_sample
             print(f"Running Experiment 6 on sampled queries ({len(queries_to_use)} queries).")
             names = [
-                f"experiment5_bm25_monoT5_sample_{len(queries_to_use)}_queries"
+                f"experiment6_bm25_monoT5_sample_{len(queries_to_use)}_queries"
             ]
         else:
             queries_to_use = self.collection.queries
             print(f"Running Experiment 6 on full query set ({len(queries_to_use)} queries).")
             names = [
-                "experiment5_bm25_monoT5"
+                "experiment6_bm25_monoT5"
             ]
         
         save_dir = self.results_folder / "experiment_6"

@@ -1,55 +1,55 @@
-To change:
-currently we're using test_queries from test.json
-we should instead create train_queries from train.json
-i think? even if there's not that much training here, it's mostly only chill evaluation of stuff
+##JUST RUN THE __INIT__ to visualize the precomputed performances.
 
-optional:
-- what abt if we also do a nice GUI using the last pipeline? should be pretty easy
-- should we set up all the pipelines in the various files as objects and then compare all of them
-in the end in one unique file or not?
+Experiment 1: retrieval models + pseudo relevance feedback (PRF) on the full-text index
+o	BM25
+o	BM25 + RM3
+o	TF-IDF
+o	TF-IDF + RM3
+These are the basic baselines that we used to determine how (BM25) and (TF-IDF) models perform on full-text documents. RM3 is added to test if query expansion improves performances by adding terms from potentially relevant documents.
 
--------- 3 BASIC BASELINES: --------
+Experiment 2: thesaurus-based query expansion (using rake and wordnet), with and without PRF on the full-text index
+o	BM25 and TF-IDF with thesaurus-expanded queries:
+Original queries are expanded using a thesaurus (generating synonyms for extracted keywords) before retrieval with BM25 or TF-IDF.
+o	BM25 and TF-IDF with thesaurus-expanded queries + RM3:               
+After expanding queries with a thesaurus, RM3 is used to add additional relevant terms from the top-ranked documents.
 
-1) base_pipeline_1.py
-bm25 vs Tfidf using query expansion
-- bm25 + pseudo relevance feedback
-- tfidf + pseudo relevance feedback
-vs without rm3
+Experiment 3: BM25 + RM3 on only expanded keywords index, with and without thesaurus-expanded queries
+We built an index where each document is represented only by its keywords and modern synonyms (three synonyms per keyword) before indexing (text no index). The idea was that the queries could more easily match the expanded keywords from the historical newspaper corpus.
+o	BM25 vs BM25 + RM3 on keyword-only index
+o	BM25 vs BM25 + RM3 on keyword-only index with thesaurus-expanded queries:      
+expanded also the queries to try and get a better match word to word
 
-2) base_pipeline_2.py
-Does it make sence to have both thesaurus based and pseudo relevance?
-ha senso? i risultati migliorano?
-- bm25 + (keyword extractor, thesaurus based) + pseudo relevance feedback
-- tfidf + (keyword extractor, thesaurus based) + pseudo relevance feedback 
-vs without rm3
+1.	Experiment 4: fielded retrieval with combined keywords and text index 
+o	BM25F on keywords-only field: 
+BM25F retrieval weighting only the keywords field (weight 0 for text, 1 for keywords).
+o	BM25F on text-only field: 
+BM25F retrieval weighting only the text field (weight 1 for text, 0 for keywords).
+o	BM25F on both fields (balanced): 
+BM25F with weights (0.7 for text, 0.3 for keywords).
+Differences from baselines:
+Introduces fielded indexing (combining keywords and full-text fields in one index) and BM25F (field-aware BM25).
+All the keywords have also been expanded using modern synonyms.
+Hypotheses being tested: 
+Fielded retrieval can better balance sparse keywords (robust for giving importance to historical entities) and dense text (for context), trying to improve precision/recall over keyword-only baselines.
+Pipeline:
+Indexing (combined keywords-and-text index with fields) → Retrieval (BM25F with field weights) → Evaluation (metrics on qrels).
 
-3) base_pipeline_3.py
-Indexing strategies:
-keywords extraction + thesaurus based keyword expansion
-indexing of only keywords and expanded keywords
-(use best retriever pipeline)                         
+Experiment 5: dense retrieval with bi-neural encoder
+o	RetroMAE bi-encoder retrieval:                  
+Dense retrieval using RetroMAE embeddings (msmarco_distill model) on a FlexIndex.
+o	BM25 reranking + RetroMAE:
+Top-1000 BM25 results from basic text index, then reranked by RetroMAE dense retrieval.
+Differences from baselines:  
+This is a completely different approach from the previous experiments. We shift from sparse (BM25/TF-IDF) to dense (neural embedding-based) retrieval.
+Hypotheses being tested:
+Dense methods can better handle semantic similarities and historical language variations (e.g., synonyms, context) compared to sparse baselines, potentially improving recall for ambiguous queries, even if not directly finetuned on the corpus. Combining sparse (BM25) with dense (RetroMAE) may yield hybrid benefits, testing if reranking enhances overall effectiveness.
+Pipeline
+Indexing (RetroMAE embedding generation → FlexIndex for dense vectors) → Retrieval (dense similarity search or BM25 top-k) → Ranking (optional BM25 reranking for dense results) → Evaluation
 
-
--------- 2 ADDITIONAL EXPERIMENTS --------
-TRY ADDING RERANKING WITH Bi-Encoder on top of the previous best base_pipeline
-- (best between bm25 and tfidf) 
-- reranking with biencoder
-
-DEVELOP LAST PIPELINE
-- final hot shi'
-
-
-
-
-!!! optional
-this might be interesting
-
-PyTerrier supports query expansion using multiple fields. 
-We can use an external collection like Wikipedia for query expansion by indexing it separately and using it to enrich the query.
-This allows for more informative term expansion based on content from different fields in an external corpus.
-
-- riscrivere funzione max_keywords
-- indexing con piu' fields, keywords AND context 
-matching bm25 keywords (query keywords, matching index keywords)
-+ reranking biencoder
-
+Experiment 6: dense retrieval with monoT5 cross encoder
+o	RetroMAE bi-encoder retrieval:
+retrieval using RetroMAE embeddings (msmarco_distill model) on a FlexIndex.
+o	BM25 reranking + RetroMAE:
+Top-100 BM25 results from basic text index, then reranked by RetroMAE dense retrieval.
+Differences from baselines:  
+During the creation of the index “text” is saved as metadata in order to be easily retrievable in order to be used with monoT5. 
