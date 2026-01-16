@@ -45,6 +45,8 @@ class llm():
         for i in range(document_context_number):
             context += (
                 f"CONTEXT NUMBER: {i+1}\n"
+                f"DOCUMENT ID: {i+1}\n"
+                f"{results.iloc[i]['docno']}\n\n"
                 f"{results.iloc[i]['text']}\n\n"
             )
 
@@ -95,7 +97,7 @@ class llm():
                 "content": (
                     "You are a helpful assistant. "
                     "Answer reading the context ONLY if it is relevant."
-                    "IF THE TOPIC OF DISCUSSION IS NOT IN THE CONTEXT REPLY 'I DO NOT KNOW' OTHERWISE MENTION THE RELEVANT THINGS IN THE CONTEXT"
+                    "IF THE TOPIC OF DISCUSSION IS NOT IN THE CONTEXT REPLY 'I DO NOT KNOW' OTHERWISE MENTION THE RELEVANT THINGS IN THE CONTEXT."
                 ),
             },
             {"role": "user", "content": f"{context}\n\n{prompt}"},
@@ -158,7 +160,7 @@ class llm():
                 server=server_mode,
                 api_key=api_key,
             )
-            return answer
+
 
         elif endpoint == "ollama":
             model = "gemma3:4b" #hard coded for semplicity, to eliminate 
@@ -171,6 +173,9 @@ class llm():
                 server=server_mode,
                 api_key=api_key,
             )
-            return answer
+
         else:
             raise ValueError("Endpoint must be 'lmstudio' or 'ollama'")
+        
+        final_answer = answer + "\n\n" + context
+        return final_answer
