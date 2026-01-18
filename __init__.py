@@ -8,7 +8,7 @@ if __name__ == "__main__":
     collection.load_documents()
     collection.load_queries()
     collection.load_qrels()
-    #collection.sample_queries(n=1000)
+    collection.sample_queries(n=1000)
 
     indexes = BenchmarkIndex(collection)
     #indexes.create_basic_index()
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     #experiments.run_experiment_3(test_on_sample=True)
     #experiments.run_experiment_4(test_on_sample=True)
     #experiments.run_experiment_5(test_on_sample=True)
-    experiments.run_experiment_6(test_on_sample=False)
+    #experiments.run_experiment_6(test_on_sample=True)
 
     #rag = llm(collection=collection, indexes=indexes)
     #answer = rag.answer_query("When did the king of spain died?")
