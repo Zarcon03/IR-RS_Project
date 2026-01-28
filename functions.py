@@ -1,40 +1,29 @@
-# import nltk
-# nltk.download('punkt')
-# nltk.download('wordnet')
-# nltk.download('stopwords')
-
-
 from rake_nltk import Rake
 from keybert import KeyBERT
+import nltk
 from nltk.wsd import lesk
 from nltk import word_tokenize
 import torch
 from sentence_transformers import SentenceTransformer
 from typing import List, Optional
+from constants import DEVICE
 
 # 1. DEFINE GLOBAL REFERENCE
 _KW_MODEL_BERT: Optional[KeyBERT] = None
 _KW_MODEL_Rake: Optional[Rake] = None
 
 def _initialize_model(model):
-    """
-    Internal helper to load the model only when requested.
-    """
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # Internal helper to load the model only when requested.
     if model == "BERT":
-        print(f"Initializing KeyBERT on: {device}...")
+        print(f"Initializing KeyBERT on: {DEVICE}...")
         return KeyBERT()
     elif model == "Rake":
         return Rake()
 
 
 def keywords_extraction_BERT(text: str, max_keywords: int) -> List[str]:
-    """
-    Extracts keywords using KeyBERT. 
-    initializes the model only on the first run (Lazy Loading).
-    """
+    # Extracts keywords using KeyBERT. Initializes the model only on the first run (Lazy Loading).
     global _KW_MODEL_BERT
-    
     if _KW_MODEL_BERT is None:
         _KW_MODEL_BERT = _initialize_model("BERT")
 
@@ -48,9 +37,9 @@ def keywords_extraction_BERT(text: str, max_keywords: int) -> List[str]:
 
 def keywords_extraction_RAKE(text: str, max_keywords: int) -> list[str]:
     global _KW_MODEL_Rake
-    
     if _KW_MODEL_Rake is None:
         _KW_MODEL_Rake = _initialize_model("Rake")
+
     r = _KW_MODEL_Rake
     r.extract_keywords_from_text(text)
     phrases = r.get_ranked_phrases()
@@ -109,3 +98,17 @@ class TokenizerWrapper:
         # PyTerrier may pass a tuple;
         # T5Tokenizer expects something mutable
         return self.tok.convert_tokens_to_string(list(tokens))
+    
+def _download_nltk_resources():
+    resources = [
+        ('tokenizers/punkt', 'punkt'),
+        ('tokenizers/punkt_tab', 'punkt_tab'),
+        ('corpora/wordnet', 'wordnet'),
+        ('corpora/stopwords', 'stopwords')
+    ]
+    for resource, download_name in resources:
+        try:
+            nltk.data.find(resource)
+        except LookupError:
+            nltk.download(download_name)
+            

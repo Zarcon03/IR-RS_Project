@@ -1,4 +1,5 @@
 from pyterrier.measures import P, R, nDCG, MAP
+import torch
 
 EVAL_METRICS = [P@1, P@5, P@10, R@5, R@10, nDCG@5, nDCG@10, MAP]
 
@@ -10,3 +11,6 @@ DENSE_INDEX_NAME = "dense_index.flex"
 RESULTS_FOLDER = "results"
 
 RANDOM_STATE = 42
+
+# Determine device for model operations (e.g., 'xpu' for Intel GPUs, 'cuda' for NVIDIA GPUs)
+DEVICE = 'xpu' if torch.xpu.is_available() else 'cpu'
